@@ -1,6 +1,6 @@
 jQuery 总体架构
 
-###1,jQuery 内部结构图
+### 1,jQuery 内部结构图
 
 ```
 var jQuery = function(){
@@ -25,7 +25,7 @@ jQuery.extend 方法是一个对象拷贝的方法，包括深拷贝，后面会
 
 下面的关系可能会有些乱，但是仔细看了前面的介绍，应该能看懂。fn 就是 prototype，所以 jQuery 的 fn 和 prototype 属性指向 fn 对象，而 init 函数本身就是 jQuery.prototype 中的方法，且 init 函数的 prototype 原型指向 fn。
 
-###2，链式调用
+### 2，链式调用
 
 链式调用的好处，就是写出来的代码非常简洁，而且代码返回的都是同一个对象，提高代码效率。
 
@@ -51,7 +51,7 @@ jQuery().each().each();
 // 'each'
 ```
 
-###extend
+### extend
 
 jQuery 中一个重要的函数便是 extend，既可以对本身 jQuery 的属性和方法进行扩张，又可以对原型的属性和方法进行扩展。
 
