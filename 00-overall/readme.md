@@ -140,3 +140,37 @@ extend 函数符合 jQuery 中的参数处理规范，算是比较标准的一�
 extend 函数还需要主要一点，jQuery.extend = jQuery.fn.extend，不仅 jQuery 对象又这个函数，连原型也有，那么如何区分对象是扩展到哪里了呢，又是如何实现的？
 
 其实这一切都要借助与 javascript 中 this 的动态性，target = this，代码就放在那里，谁去执行，this 就会指向谁，就会在它的属性上扩展。
+```
+var obj1 = {
+    name: 'Tom',
+    age: 21
+}
+
+var obj2 = {
+    name: 'Jerry',
+    sex: 'boy'
+}
+
+$.extend(obj1, obj2); // {name: "Jerry", age: 21, sex: "boy"}
+
+obj1 // {name: "Jerry", age: 21, sex: "boy"}
+obj2 // {name: "Jerry", sex: "boy"}
+```
+上述代码展示的是将 obj2 对象合并到 obj1 对象中，这种方法会 改变 obj1 对象的结构。如果你 不想改变 合并目标对象的结构，你可以这么做。
+```
+var obj1 = {
+    name: 'Tom',
+    age: 21
+}
+
+var obj2 = {
+    name: 'Jerry',
+    sex: 'boy'
+}
+
+$.extend({}, obj1, obj2); // { name: "Jerry", age: 21, sex: "boy" }
+
+obj1 // { name: "Tom", age: 21 }
+obj2 // { name: "Jerry", sex: "boy" }
+```
+
