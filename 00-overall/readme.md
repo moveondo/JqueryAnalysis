@@ -381,6 +381,7 @@ jQuery.isPlainObject(function(){});// false
 
 ### 参考
 [jQuery 之 extend 方法使用](https://segmentfault.com/a/1190000004082170) 
+
 [整体架构分析](https://github.com/songjinzhong/JQuerySource/tree/master) 
 
 
