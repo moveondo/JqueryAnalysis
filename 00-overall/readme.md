@@ -17,6 +17,9 @@ jQuery.fn = jQuery.prototype = {
 
 ![image](https://github.com/moveondo/JqueryLearn/edit/master/00-overall/image/fn.jpg "image")
 
+![image](https://github.com/moveondo/Learn-zepto/blob/master/images/3.png)
+
+
 ![](https://github.com/moveondo/JqueryLearn/edit/master/00-overall/image/fn.jpg)
 
 
