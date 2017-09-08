@@ -380,7 +380,10 @@ jQuery.isPlainObject(function(){});// false
 可以看出 jQuery 很巧妙的整体布局思路，对于属性方法和原型方法等区分，防止变量污染等，都做的非常好。阅读框架源码只是开头，有趣的还在后面。
 
 ### 参考
-[参考链接](https://segmentfault.com/a/1190000004082170) "extend讲解"
+[jQuery 之 extend 方法使用](https://segmentfault.com/a/1190000004082170) 
+[整体架构分析](https://github.com/songjinzhong/JQuerySource/tree/master) 
+
+
 
 
 
