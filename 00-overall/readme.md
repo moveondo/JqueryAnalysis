@@ -15,7 +15,7 @@ jQuery.fn = jQuery.prototype = {
 
 网上的一张图：
 
-![image](https://github.com/moveondo/JqueryLearn/edit/master/00-overall/image/fn.jpg)
+![image](https://github.com/moveondo/JqueryLearn/edit/master/00-overall/image/fn.jpg "image")
 
 
 从这张图中可以看出，window 对象上有两个公共的接口，分别是 $ 和 jQuery：
