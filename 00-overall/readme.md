@@ -15,6 +15,8 @@ jQuery.fn = jQuery.prototype = {
 
 网上的一张图：
 
+![image](https://github.com/moveondo/JqueryLearn/edit/master/00-overall/image/fn.jpg "image")
+
 
 从这张图中可以看出，window 对象上有两个公共的接口，分别是 $ 和 jQuery：
 
@@ -377,6 +379,10 @@ jQuery.isPlainObject(function(){});// false
   window.jQuery = window.$ = jQuery;
 })(window);
 ```
+
+![image](https://github.com/moveondo/JqueryLearn/edit/master/00-overall/image/jQuery.png)
+
+
 可以看出 jQuery 很巧妙的整体布局思路，对于属性方法和原型方法等区分，防止变量污染等，都做的非常好。阅读框架源码只是开头，有趣的还在后面。
 
 ### 参考
