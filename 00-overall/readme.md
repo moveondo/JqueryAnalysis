@@ -174,3 +174,215 @@ obj1 // { name: "Tom", age: 21 }
 obj2 // { name: "Jerry", sex: "boy" }
 ```
 
+#### 由 extend 衍生的函数
+再看 extend 源码，里面有一些函数，只是看名字知道了它是干什么的，我专门挑出来，找到它们的源码。
+```
+jQuery.isFunction = function (obj) {
+    return jQuery.type(obj) === "function";
+}
+```
+这也太简单了些。这里又要引出 jQuery 里一个重要的函数 jQuery.type，这个函数用于类型判断。
+
+首先，为什么传统的 typeof 不用？因为不好用（此处应有一个哭脸）：
+
+```
+// Numbers
+typeof 37 === 'number';
+typeof 3.14 === 'number';
+typeof(42) === 'number';
+typeof Math.LN2 === 'number';
+typeof Infinity === 'number';
+typeof NaN === 'number'; // Despite being "Not-A-Number"
+typeof Number(1) === 'number'; // but never use this form!
+
+// Strings
+typeof "" === 'string';
+typeof "bla" === 'string';
+typeof (typeof 1) === 'string'; // typeof always returns a string
+typeof String("abc") === 'string'; // but never use this form!
+
+// Booleans
+typeof true === 'boolean';
+typeof false === 'boolean';
+typeof Boolean(true) === 'boolean'; // but never use this form!
+
+// Symbols
+typeof Symbol() === 'symbol'
+typeof Symbol('foo') === 'symbol'
+typeof Symbol.iterator === 'symbol'
+
+// Undefined
+typeof undefined === 'undefined';
+typeof declaredButUndefinedVariable === 'undefined';
+typeof undeclaredVariable === 'undefined'; 
+
+// Objects
+typeof {a:1} === 'object';
+
+// use Array.isArray or Object.prototype.toString.call
+// to differentiate regular objects from arrays
+typeof [1, 2, 4] === 'object';
+
+typeof new Date() === 'object';
+
+// The following is confusing. Don't use!
+typeof new Boolean(true) === 'object'; 
+typeof new Number(1) === 'object'; 
+typeof new String("abc") === 'object';
+
+// Functions
+typeof function(){} === 'function';
+typeof class C {} === 'function';
+typeof Math.sin === 'function';
+
+// This stands since the beginning of JavaScript
+typeof null === 'object';
+```
+可以看得出来，对于一些 new 对象，比如 new Number(1)，也会返回 object
+
+网上有两种解决方法（有效性未经考证，请相信 jQuery 的方法），一种是用 constructor.nameObject.prototype.constructor MDN，一种是用 Object.prototype.toString.call()Object.prototype.toString()，最终 jQuery 选择了后者。
+
+```
+var n1 = 1;
+n1.constructor.name;//"Number"
+var n2 = new Number(1);
+n2.constructor.name;//"Number"
+
+var toString = Object.prototype.toString;
+toString.call(n1);//"[object Number]"
+toString.call(n2);//"[object Number]"
+```
+以上属于科普，原理不多阐述，接下来继续看源码 jQuery.type：
+```
+// 这个对象是用来将 toString 函数返回的字符串转成
+var class2type = {
+    "[object Boolean]": "boolean",
+    "[object Number]": "number",
+    "[object String]": "string",
+    "[object Function]": "function",
+    "[object Array]": "array",
+    "[object Date]": "date",
+    "[object RegExp]": "regexp",
+    "[object Object]": "object",
+    "[object Error]": "error",
+    "[object Symbol]": "symbol"
+}
+var toString = Object.prototype.toString;
+
+jQuery.type = function (obj) {
+    if (obj == null) {
+        return obj + "";
+    }
+    return 
+      typeof obj === "object" || typeof obj === "function" ? 
+        class2type[toString.call(obj)] || "object" : 
+        typeof obj;
+}
+```
+显然$.type是对object 或者 function之类的类型进行class2type 转换，其余类型依然使用typeof.
+
+#### jQuery.isPlainObject
+
+```
+var getProto = Object.getPrototypeOf;//获取父对象
+var hasOwn = class2type.hasOwnProperty;
+var fnToString = hasOwn.toString;
+var ObjectFunctionString = fnToString.call( Object );
+
+jQuery.isPlainObject = function (obj) {
+    var proto, Ctor;
+
+    // 排除 underfined、null 和非 object 情况
+    if (!obj || toString.call(obj) !== "[object Object]") {
+        return false;
+    }
+
+    proto = getProto(obj);
+
+    // Objects with no prototype (e.g., `Object.create( null )`) are plain
+    if (!proto) {
+        return true;
+    }
+
+    // Objects with prototype are plain iff they were constructed by a global Object function
+    Ctor = hasOwn.call(proto, "constructor") && proto.constructor;
+    return typeof Ctor === "function" && fnToString.call(Ctor) === ObjectFunctionString;
+}
+```
+
+看一下效果：
+```
+jQuery.isPlainObject({});// true
+jQuery.isPlainObject({ a: 1 });// true
+jQuery.isPlainObject(new Object());// true
+
+jQuery.isPlainObject([]);// false
+jQuery.isPlainObject(new String('a'));// false
+jQuery.isPlainObject(function(){});// false
+
+```
+除了这几个函数之外，还有个 Array.isArray()，这个真的不用介绍了吧。
+
+### 总结
+
+
+ jQuery 内部请下面的代码：
+
+```
+(function(window) {
+  // jQuery 变量，用闭包避免环境污染
+  var jQuery = (function() {
+    var jQuery = function(selector, context) {
+        return new jQuery.fn.init(selector, context, rootjQuery);
+    };
+
+    // 一些变量声明
+
+    jQuery.fn = jQuery.prototype = {
+        constructor: jQuery,
+        init: function(selector, context, rootjQuery) {
+          // 下章会重点讨论
+        }
+
+        // 原型方法
+    };
+
+    jQuery.fn.init.prototype = jQuery.fn;
+
+    jQuery.extend = jQuery.fn.extend = function() {};//已介绍
+
+    jQuery.extend({
+        // 一堆静态属性和方法
+        // 用 extend 绑定，而不是直接在 jQuery 上写
+    });
+
+    return jQuery;
+  })();
+
+  // 工具方法 Utilities
+  // 回调函数列表 Callbacks Object
+  // 异步队列 Defferred Object
+  // 浏览器功能测试 Support
+  // 数据缓存 Data
+  // 队列 Queue
+  // 属性操作 Attributes
+  // 事件系统 Events
+  // 选择器 Sizzle
+  // DOM遍历 Traversing
+  // 样式操作 CSS（计算样式、内联样式）
+  // 异步请求 Ajax
+  // 动画 Effects
+  // 坐标 Offset、尺寸 Dimensions
+
+  window.jQuery = window.$ = jQuery;
+})(window);
+```
+可以看出 jQuery 很巧妙的整体布局思路，对于属性方法和原型方法等区分，防止变量污染等，都做的非常好。阅读框架源码只是开头，有趣的还在后面。
+
+### 参考
+[参考链接](https://segmentfault.com/a/1190000004082170) "extend讲解"
+
+
+
+
+
