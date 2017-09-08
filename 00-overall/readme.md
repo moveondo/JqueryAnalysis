@@ -1,5 +1,85 @@
 jQuery 总体架构
 
+### 无 new 函数实现
+
+下面是一个普通的函数，很显然，会陷入死循环：
+
+```
+var jQuery = function(){
+  return new jQuery();
+}
+jQuery.prototype = {
+  ...
+}
+```
+这个死循环来的太突然，jQuery() 会创建一个 new jQuery，new jQuery 又会创建一个 new jQuery...
+
+jQuery 用一个 init 函数来代替直接 new 函数名的方式，还要考虑到 jQuery 中分离作用域：
+
+```
+var jQuery = function(){
+  return new jQuery.prototype.init();
+}
+jQuery.prototype = {
+  constructor: jQuery,
+  init: function(){
+    this.jquery = 1.0;
+    return this;
+  },
+  jquery: 2.0,
+  each: function(){
+    console.log('each');
+    return this;
+  }
+}
+jQuery().jquery //1.0
+jQuery.prototype.jquery //2.0
+
+jQuery().each() // error
+```
+上面看似运行正常，但是问题出在 jQuery().each() // error，访问不到 each 函数。实际上，new jQuery.prototype.init() 返回到是谁的实例？是 init 这个函数的实例，所以 init 函数中的 this 就没了意义。
+
+
+那么，如果：
+```
+var jq = jQuery();
+jq.__proto__ === jQuery.prototype;
+jq.each === jQuery.prototype.each;
+```
+
+
+
+如果可以实现上面的 proto 的指向问题，原型函数调用问题就解决了，但实际上：
+
+```
+var jq = jQuery();
+jq.__proto__ === jQuery.prototype.init.prototype; //true
+```
+
+
+实际上，jq 的 proto 是指向 init 函数的原型，所以，我们可以把 jQuery.prototype.init.prototype = jQuery.prototype，这个时候，函数调用就顺理成章了，而且使用的都是引用，指向的都是同一个 prototype 对象，也不需要担心循环问题。实际上，jQuery 就是这么干的。
+
+```
+var jQuery = function(){
+  return new jQuery.prototype.init();
+}
+jQuery.prototype = {
+  constructor: jQuery,
+  init: function(){
+    this.jquery = 1.0;
+    return this;
+  },
+  jquery: 2.0,
+  each: function(){
+    console.log('each');
+    return this;
+  }
+}
+jQuery.prototype.init.prototype = jQuery.prototype;
+jQuery().each() //'each'
+```
+
+
 ### 1,jQuery 内部结构图
 
 ```
