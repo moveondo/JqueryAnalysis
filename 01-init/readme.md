@@ -227,6 +227,101 @@ jQuery.merge = function (first, second) {
   return first;
 }
 ```
+这样子就可以对类似于数组且有 length 参数的类型进行合并，我感觉主要还是为了方便对 jQuery 对象的合并，因为 jQuery 对象就是有 length 的。
+
+### jQuery.parseHTML
+
+这个函数也非常有意思，就是将一串 HTML 字符串转成 DOM 对象。
+
+首先函数接受三个参数，第一个参数 data 即为 html 字符串，第二个参数是 document 对象，但要考虑到浏览器的兼容性，第三个参数 keepScripts 是为了删除节点里所有的 script tags，但在 parseHTML 里面没有体现，主要还是给 buildFragment 当作参数。总之返回的对象，是一个 DOM 数组或空数组。
+
+```
+jQuery.parseHTML = function (data, context, keepScripts) {
+  if (typeof data !== "string") {
+    return [];
+  }
+  // 平移参数
+  if (typeof context === "boolean") {
+    keepScripts = context;
+    context = false;
+  }
+
+  var base, parsed, scripts;
+
+  if (!context) {
+
+    // 下面这段话的意思就是在 context 缺失的情况下，建立一个 document 对象
+    if (support.createHTMLDocument) {
+      context = document.implementation.createHTMLDocument("");
+      base = context.createElement("base");
+      base.href = document.location.href;
+      context.head.appendChild(base);
+    } else {
+      context = document;
+    }
+  }
+  // 用来解析 parsed，比如对 "<div></div>" 的处理结果 parsed：["<div></div>", "div"]
+  // parsed[1] = "div"
+  parsed = rsingleTag.exec(data);
+  scripts = !keepScripts && [];
+
+  // Single tag
+  if (parsed) {
+    return [context.createElement(parsed[1])];
+  }
+  // 见下方解释
+  parsed = buildFragment([data], context, scripts);
+
+  if (scripts && scripts.length) {
+    jQuery(scripts).remove();
+  }
+
+  return jQuery.merge([], parsed.childNodes);
+}
+```
+buildFragment 函数主要是用来建立一个包含子节点的 fragment 对象，用于频发操作的添加删除节点。parsed = buildFragment([data], context, scripts);建立好一个 fragment 对象，用 parsed.childNodes 来获取这些 data 对应的 HTML。
+
+### jQueyr.makeArray
+
+jQuery 里面的函数调用，真的是一层接一层，虽然有时候光靠函数名，就能知道这函数的作用，但其中思考之逻辑还是挺参考意义的。
+```
+jQuery.makeArray = function (arr, results) {
+  var ret = results || [];
+
+  if (arr != null) {
+    if (isArrayLike(Object(arr))) {
+        jQuery.merge(ret, typeof arr === "string" ? [arr] : arr);
+    } else {
+        push.call(ret, arr);
+    }
+  }
+
+  return ret;
+}
+```
+makeArray 把左边的数组或字符串并入到右边的数组或一个新数组，其中又简介的引用 jQuery.merge 函数。
+
+接下来是着 isArrayLike 函数，可能需要考虑多方面的因素，比如兼容浏览器等，就有了下面这一长串：
+
+```
+function isArrayLike(obj) {
+
+  // Support: real iOS 8.2 only (not reproducible in simulator)
+  // `in` check used to prevent JIT error (gh-2145)
+  // hasOwn isn't used here due to false negatives
+  // regarding Nodelist length in IE
+  var length = !!obj && "length" in obj && obj.length,
+      type = jQuery.type(obj);
+
+  if (type === "function" || jQuery.isWindow(obj)) {
+      return false;
+  }
+
+  return type === "array" || length === 0 || typeof length === "number" && length > 0 && (length - 1) in obj;
+}
+```
+
+
 
 
 
