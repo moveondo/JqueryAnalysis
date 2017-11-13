@@ -3,6 +3,7 @@
 事件是 JS DOM 中极具活力的内容，你可以随时监听 DOM 的变化，并对它们及时的做出反应，如果你不是太懂 JS 中的事件，建议你先去看一些相关介绍的文章，直接看 jQuery 中的事件委托头会头大的。
 
 事件的处理顺序由两个环节，一个是捕获环节，一个是冒泡环节，借用别人的一张图：
+![event](https://github.com/moveondo/JqueryLearn/blob/master/06-event/event.jpg "event")  
 
 事件冒泡与捕获
 
