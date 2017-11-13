@@ -28,7 +28,7 @@ off 函数的用法 .off( events [, selector ] [, handler ] )，events 代表要
 on off 函数源码
 
 虽然我分析的源码时 jQuery 3.1.1，但这个时候 bind 和 delegate 函数并没有从源码中移除呢，先来看看它们怎么调用 on：
-
+```
 jQuery.fn.extend( {
   bind: function( types, data, fn ) {
     return this.on( types, null, data, fn );
@@ -46,8 +46,9 @@ jQuery.fn.extend( {
       this.off( types, selector || "**", fn );
   }
 } );
+```
 可以看得出来，全都被 on 和 off 这两个函数来处理了。
-
+```
 jQuery.fn.extend( {
   on: function (types, selector, data, fn) {
     // on 又依托于全局的 on 函数
@@ -117,8 +118,9 @@ function on( elem, types, selector, data, fn, one ) {
     jQuery.event.add( this, types, fn, data, selector );
   } );
 }
+```
 是的，你没有看错，这个全局的 on 函数，其实只是起到了校正参数的作用，而真正的大头是：
-
+```
 jQuery.event = {
   global = {},
   add: function(){...},
@@ -163,6 +165,8 @@ jQuery.fn.off = function (types, selector, fn) {
     jQuery.event.remove(this, types, fn, selector);
   });
 }
+```
+
 总结
 
 可见 jQuery 对于参数的放纵导致其处理起来非常复杂，不过对于使用者来说，却非常大便利。
