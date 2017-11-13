@@ -81,7 +81,7 @@ jQuery.fn.add = function (selector, context) {
       jQuery.merge(this.get(), jQuery(selector, context))));
 }
 ```
-应该不需要解释吧，源码一清二楚。
+
 
 总结
 
