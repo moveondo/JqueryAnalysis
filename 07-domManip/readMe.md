@@ -7,7 +7,7 @@
 jQuery 内的一些 DOM 操作函数
 
 jQuery 内有几个方法调用了 domManip 函数，他们分别如下：
-
+```
 jQuery.fn.extend( {
   // 在最后一个子元素后添加
   append: function() {
@@ -58,8 +58,9 @@ jQuery.fn.extend( {
     }, ignored );
   }
 } );
+```
 仔细观察一下，这几个函数都有一个特点，就是有关于 domManip 的参数 domManip(this, arguments, callback)，然后在 callback 函数里面通过原生 js 来实现：
-
+```
 // 一个简单的
 jQuery.fn.extend( {
   append: function(elem){
@@ -83,8 +84,9 @@ jQuery.fn.extend( {
     return this;
   }
 } );
-我之前就跟同学讨论过一个问题，就是如何用原生的方法将字符串转换成 dom 对象，在 jQuery 里面直接jQuery.parseHTML()，原生的话，可以用下面的：
-
+```
+我之前就跟同事讨论过一个问题，就是如何用原生的方法将字符串转换成 dom 对象，在 jQuery 里面直接jQuery.parseHTML()，原生的话，可以用下面的：
+```
 function parseHtml(str){
   var div = document.createElement('div');
   if(typeof str == 'string'){
@@ -92,6 +94,7 @@ function parseHtml(str){
   }
   return div.children[0];
 }
+```
 虽然很是抠脚，但也是一种方法。
 
 buildFragment 方法
@@ -101,7 +104,7 @@ buildFragment 方法
 在之前，有必要先了解一下 createDocumentFragment，文中有几句话说的很好：**DocumentFragments are DOM Nodes. They are never part of the main DOM tree. The usual use case is to create the document fragment, append elements to the document fragment and then append the document fragment to the DOM tree. **。它虽然也同样占内存，却比 createElement 方法好多了。
 
 所以，当以后再碰到 create 无需渲染的 dom 的时候，要使用 document.createDocumentFragment 替代 document.createElement。
-
+```
 function buildFragment( elems, context, scripts, selection, ignored ) {
   var elem, tmp, tag, wrap, contains, j,
     // context 一般为 document
@@ -190,6 +193,7 @@ function buildFragment( elems, context, scripts, selection, ignored ) {
 
   return fragment;
 }
+```
 最后的返回结果是 fragment，但它并不是我们想要的 dom，而真正的结果应该是：fragment.childNodes，一个 dom 伪数组。
 
 domManip 方法
@@ -197,7 +201,7 @@ domManip 方法
 其实本文的重点应该是 domManip 方法，不急，现在开始来讲。
 
 前面已经介绍了五个基本的 domManip 用法，下面是几个扩展，也就是反过来用，也算是间接使用 domManip 吧：
-
+```
 jQuery.each( {
   appendTo: "append",
   prependTo: "prepend",
@@ -224,10 +228,11 @@ jQuery.each( {
     return this.pushStack( ret );
   };
 } );
+```
 这又是五个方法，不过是和之前那五个方法刚好先反的逻辑，实用。
 
 来看看 domManip 函数：
-
+```
 function domManip( collection, args, callback, ignored ) {
 
   // var concat = [].concat; 用于将伪 args 转换成真是的数组
@@ -319,6 +324,7 @@ function domManip( collection, args, callback, ignored ) {
   }
   return collection;
 }
+```
 在我看来，domManip 主要的几个功能包括：接受 HTML 字符串，并生成相对于的 dom，callback 回调函数，处理 dom，而且回调函数中的 this 是指向当前操作的 dom 的。剩下的事情，就交给回调函数去处理。
 
 所以，domManip 的作用远比想象的要少。
