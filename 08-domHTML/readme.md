@@ -1,10 +1,11 @@
+
 上一章谈到了 dom 的几个插入操作，虽然插入的方式多种多样，但只要在懂了原生方法等基础上，代码看起来都不是很复杂。比较有意思的一个函数就是 buildFragment 方法，用来将 html 字符串转换成 dom 碎片。本章来看一下 dom 的其它方法。
 
-html、text 方法
+#### html、text 方法
 
 说到 elem 的操作，就必然要提一下 elem 的类型。NodeType，一个节点的 nodeType 为 1 表示元素节点，为 3 表示 text 文字节点，为 9 表示 document，11 表示 documentFragment，就是上一章所说的文档碎片。大概知道这几个就可以了。
 
-原生的 elem 方法包括 innerHTML，outerHTML，innerText，outerText，然而，在开始本章之前，一定要对这几个方法很常熟练才行。解密jQuery内核 DOM操作方法（二）html,text,val。
+原生的 elem 方法包括 innerHTML，outerHTML，innerText，outerText，然而，在开始本章之前，一定要对这几个方法很常熟练才行。
 
 innerHTML 和 outerHTML 一个显著的差异性就是 outer 会把当前 elem 也一起算进去并获得 html 字符串，inner 不会。
 
@@ -15,7 +16,7 @@ innerText 和 outerText 获取时候没有显著差异，但是 set 情况下(�
 access 函数源码
 
 下面是jQuery.fn.html 和 text 的源码，看了之后肯定有话要说：
-
+```
 jQuery.fn.extends( {
   html: function( value ) {
     return access( this, function( value ) {
@@ -28,12 +29,13 @@ jQuery.fn.extends( {
     }, null, value, arguments.length)
   })
 } );
+```
 好吧，我承认，又是同样的套路，先交给 access 函数来处理，然后 callback 函数，我猜这个时候 callback 函数肯定是采用 call 方式使 this 绑定当前 elem。这个套路似曾相识，对，就是 domManip 函数。
 
 其实 access 前面已经介绍了过了，不过还是值得来重现介绍一下。
 
 像 html、text、css 这些函数的功能，都有一个特点，就是可以带参数，也可以不带参数，先用 access 函数对参数校正，执行回调。
-
+```
 var access = function( elems, fn, key, value, chainable, emptyGet, raw ) {
   var i = 0,
     len = elems.length,
@@ -93,12 +95,13 @@ var access = function( elems, fn, key, value, chainable, emptyGet, raw ) {
 
   return len ? fn( elems[ 0 ], key ) : emptyGet;
 };
+```
 access 中出现了一种 value 为函数的情况，没有碰到过，暂不知道什么意思。access 函数基本没有做太大的变化处理看，看起来也不是很难。(哈哈，找到了，后面 css 操作的时候，key 可以为 object)
 
 fn.html 源码
 
 现在就是主要来看这个回调函数了，当前的 this 使指向 jQuery 对象的，并没有指向单独的 elem 元素，html 肯定要进行判断：
-
+```
 jQuery.fn.extends( {
   html: function( value ) {
     return access( this, function( value ) {
@@ -141,10 +144,11 @@ jQuery.fn.extends( {
     }, null, value, arguments.length );
   }
 } );
+```
 fn.text 源码
 
 下面是 text 源码，关于 html 和 text 在开头已经介绍了，算是比较基础的 dom 操作吧，直接来看源码吧：
-
+```
 jQuery.fn.extends( {
   text: function( value ) {
     return access( this, function( value ) {
@@ -161,8 +165,9 @@ jQuery.fn.extends( {
     }, null, value, arguments.length );
   }
 } );
+```
 先来看看 set 的情况，这里有个 empty 函数，源码在下面，两个功能，先清空 dom 内容，在删除 data cache 中保存的数据。这里没有用 innerText 方法，而是使用 textContent 方法，貌似就 set 来说，textContent 兼容性更好。
-
+```
 jQuery.fn.extends( {
   empty: function() {
     var elem,
@@ -216,6 +221,7 @@ var getText = Sizzle.getText = function( elem ) {
 
   return ret;
 };
+```
 总结
 
 我自己在浏览器上面测试，发现 textContent 方法并不会把空白符给删了，而且 jQuery 的 text 方法也没有做过滤，每个浏览器的解析也不一样，就可能导致浏览器带来的差异，实际使用的时候，还是要小心点好，多长个心眼。
